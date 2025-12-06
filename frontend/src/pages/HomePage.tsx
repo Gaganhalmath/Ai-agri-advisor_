@@ -13,7 +13,7 @@ const HomePage: React.FC<HomePageProps> = ({ setActiveTab }) => {
             <section className="hero-bg text-white py-20 px-4">
                 <div className="container mx-auto text-center">
                     <h2 className="text-4xl md:text-5xl font-bold mb-6">Your AI-Powered Farming Assistant</h2>
-                    <p className="text-xl mb-8 max-w-3xl mx-auto">Get personalized advice, weather alerts, government scheme information, and crop management tips tailored to your farm's needs.</p>
+                    <p className="text-xl mb-8 max-w-3xl mx-auto">Get personalized advice, weather alerts, government scheme information, and crop management tips.</p>
                     <button
                         onClick={() => setActiveTab('chat')}
                         className="bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300"
@@ -31,25 +31,25 @@ const HomePage: React.FC<HomePageProps> = ({ setActiveTab }) => {
                         <FeatureCard
                             icon="fas fa-comments"
                             title="AI Chat Assistant"
-                            description="Get instant answers to your farming questions with our AI-powered chatbot"
+                            description="Get instant answers to your farming questions"
                             onClick={() => setActiveTab('chat')}
                         />
                         <FeatureCard
                             icon="fas fa-cloud-sun"
                             title="Weather Alerts"
-                            description="Receive timely weather forecasts and alerts specific to your region"
+                            description="Receive timely weather forecasts"
                             onClick={() => setActiveTab('weather')}
                         />
                         <FeatureCard
                             icon="fas fa-file-invoice-dollar"
                             title="Government Schemes"
-                            description="Discover eligible government schemes and subsidies for your farming needs"
+                            description="Discover eligible government schemes"
                             onClick={() => setActiveTab('schemes')}
                         />
                         <FeatureCard
                             icon="fas fa-seedling"
                             title="Fertilizers & Pesticides"
-                            description="Get recommendations for the right fertilizers and pesticides for your crops"
+                            description="Get recommendations for your crops"
                             onClick={() => setActiveTab('fertilizers')}
                         />
                     </div>

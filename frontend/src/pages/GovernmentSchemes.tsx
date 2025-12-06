@@ -1,102 +1,141 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+// Hardcoded lists for dropdowns could be moved to constants or fetched from backend if available
+const STATES = [
+    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat",
+    "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh",
+    "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab",
+    "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
+];
+
+const CROPS = [
+    "Wheat", "Rice", "Maize", "Cotton", "Sugarcane", "Pulses", "Oilseeds", "Soybean", "Groundnut"
+];
 
 const GovernmentSchemes: React.FC = () => {
-    const schemes = [
-        {
-            title: "PM-KISAN",
-            description: "Pradhan Mantri Kisan Samman Nidhi provides financial assistance to landholding farmer families.",
-            eligibility: "Small and marginal farmer families with cultivable land",
-            benefits: "₹6,000 per year in three equal installments",
-            link: "#"
-        },
-        {
-            title: "PMFBY",
-            description: "Pradhan Mantri Fasal Bima Yojana provides insurance coverage for crop loss.",
-            eligibility: "All farmers including sharecroppers and tenant farmers",
-            benefits: "Premium: 2% for Kharif, 1.5% for Rabi, 5% for commercial crops",
-            link: "#"
-        },
-        {
-            title: "NAIS",
-            description: "National Agricultural Insurance Scheme provides coverage for food crops, oilseeds, and annual commercial crops.",
-            eligibility: "All farmers growing notified crops in notified areas",
-            benefits: "Comprehensive risk insurance against yield losses",
-            link: "#"
-        },
-        {
-            title: "SMAM",
-            description: "Sub-Mission on Agricultural Mechanization promotes agricultural mechanization among small and marginal farmers.",
-            eligibility: "Individual farmers, custom hiring centers, farmer groups",
-            benefits: "Financial assistance for purchasing agricultural machinery",
-            link: "#"
-        },
-        {
-            title: "PKVY",
-            description: "Paramparagat Krishi Vikas Yojana promotes organic farming practices.",
-            eligibility: "Farmers willing to practice organic farming",
-            benefits: "Financial assistance of ₹50,000 per hectare/3 years",
-            link: "#"
-        },
-        {
-            title: "NFSM",
-            description: "National Food Security Mission increases production of rice, wheat, pulses, and coarse cereals.",
-            eligibility: "Farmers in identified districts across the country",
-            benefits: "Assistance for seeds, treatments, nutrient management etc.",
-            link: "#"
+    const [state, setState] = useState<string>("");
+    const [crop, setCrop] = useState<string>("");
+    const [schemes, setSchemes] = useState<any[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchSchemes = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const queryParams = new URLSearchParams();
+            if (state) queryParams.append("state", state);
+            if (crop) queryParams.append("crop", crop);
+
+            const response = await fetch(`http://localhost:5000/api/schemes?${queryParams.toString()}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch schemes");
+            }
+            const data = await response.json();
+            setSchemes(data);
+        } catch (err) {
+            setError("Failed to load schemes. Please try again later.");
+            console.error(err);
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
+
+    const handleSearch = () => {
+        fetchSchemes();
+    };
 
     return (
         <div className="container mx-auto px-4 py-8">
             <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Government Schemes</h2>
 
-            <div className="max-w-4xl mx-auto mb-8">
-                <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Find Eligible Schemes</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label className="block text-gray-700 mb-2">State</label>
-                            <select className="w-full border border-gray-300 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                                <option>Punjab</option>
-                                <option>Maharashtra</option>
-                                <option>Gujarat</option>
-                                <option>Uttar Pradesh</option>
-                                <option>Karnataka</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-gray-700 mb-2">Crop Type</label>
-                            <select className="w-full border border-gray-300 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                                <option>Wheat</option>
-                                <option>Rice</option>
-                                <option>Cotton</option>
-                                <option>Sugarcane</option>
-                                <option>Pulses</option>
-                            </select>
-                        </div>
+            <div className="bg-white rounded-xl shadow-md p-6 mb-8 max-w-4xl mx-auto">
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">Find Eligible Schemes</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label htmlFor="state" className="block text-gray-700 font-medium mb-2">State</label>
+                        <select
+                            id="state"
+                            value={state}
+                            onChange={(e) => setState(e.target.value)}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        >
+                            <option value="">Select State</option>
+                            {STATES.map(s => (
+                                <option key={s} value={s}>{s}</option>
+                            ))}
+                        </select>
                     </div>
-                    <button className="bg-primary-500 hover:bg-primary-600 text-white font-medium py-2 px-6 rounded-lg transition duration-300">
-                        Check Eligibility
+                    <div>
+                        <label htmlFor="crop" className="block text-gray-700 font-medium mb-2">Crop Type</label>
+                        <select
+                            id="crop"
+                            value={crop}
+                            onChange={(e) => setCrop(e.target.value)}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        >
+                            <option value="">Select Crop</option>
+                            {CROPS.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+                <div className="mt-6 text-center">
+                    <button
+                        onClick={handleSearch}
+                        disabled={loading}
+                        className={`bg-primary-500 hover:bg-primary-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                        {loading ? 'Checking...' : 'Check Eligibility'}
                     </button>
                 </div>
+            </div>
 
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">Available Schemes</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="max-w-4xl mx-auto">
+                <h3 className="text-2xl font-bold text-gray-800 mb-6">Available Schemes {schemes.length > 0 && `(${schemes.length})`}</h3>
+
+                {loading && <p className="text-center text-gray-500">Loading schemes...</p>}
+
+                {error && (
+                    <div className="text-center text-red-600 bg-red-50 p-4 rounded-lg mb-6">
+                        <p>{error}</p>
+                    </div>
+                )}
+
+                {!loading && !error && schemes.length === 0 && (
+                    <div className="text-center bg-gray-100 p-8 rounded-lg">
+                        <p className="text-gray-600">No schemes found matching your criteria. Try adjusting your search filters.</p>
+                    </div>
+                )}
+
+                <div className="grid gap-6">
                     {schemes.map((scheme, index) => (
-                        <div key={index} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition duration-300">
-                            <h4 className="text-lg font-semibold text-primary-800 mb-2">{scheme.title}</h4>
-                            <p className="text-gray-600 mb-4">{scheme.description}</p>
-                            <div className="mb-4">
-                                <h5 className="font-medium text-gray-800 mb-1">Eligibility</h5>
-                                <p className="text-gray-600 text-sm">{scheme.eligibility}</p>
+                        <div key={index} className="bg-white rounded-lg shadow-md border-l-4 border-green-500 p-6 hover:shadow-lg transition duration-300">
+                            <h4 className="text-xl font-bold text-green-700 mb-2">{scheme.title}</h4>
+                            <p className="text-gray-700 mb-4">{scheme.description}</p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div className="bg-green-50 p-3 rounded-md">
+                                    <h5 className="font-semibold text-green-800 mb-1">Benefits</h5>
+                                    <p className="text-sm text-gray-700">{scheme.benefits}</p>
+                                </div>
+                                <div className="bg-blue-50 p-3 rounded-md">
+                                    <h5 className="font-semibold text-blue-800 mb-1">Eligibility</h5>
+                                    <p className="text-sm text-gray-700">{scheme.eligibility}</p>
+                                </div>
                             </div>
-                            <div className="mb-4">
-                                <h5 className="font-medium text-gray-800 mb-1">Benefits</h5>
-                                <p className="text-gray-600 text-sm">{scheme.benefits}</p>
+
+                            <div className="text-right">
+                                <a
+                                    href={scheme.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-block text-primary-600 font-medium hover:text-primary-800 hover:underline"
+                                >
+                                    Apply Here →
+                                </a>
                             </div>
-                            <button className="text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center">
-                                Learn more <i className="fas fa-arrow-right ml-2 text-xs"></i>
-                            </button>
                         </div>
                     ))}
                 </div>
