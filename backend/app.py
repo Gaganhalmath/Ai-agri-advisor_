@@ -514,5 +514,50 @@ def get_schemes():
 
     return jsonify(results)
 
+@app.route('/api/farming-advisory', methods=['POST'])
+def farming_advisory():
+    try:
+        data = request.json
+        weather_data = data.get('weather')
+        
+        if not weather_data:
+            return jsonify({'error': 'No weather data provided'}), 400
+
+        # Construct prompt for Gemini
+        prompt = f"""
+        Based on the following weather data, provide agricultural farming advice for Indian farmers in JSON format.
+        
+        Weather Conditions:
+        - Current Temp: {weather_data['current']['temp']}°C
+        - Condition: {weather_data['current']['condition']}
+        - Wind: {weather_data['current']['wind']} km/h
+        - Humidity: {weather_data['current']['humidity']}% (estimated)
+        
+        Forecast Summary:
+        {weather_data['forecast']}
+        
+        Respond ONLY with a valid JSON object strictly matching this schema:
+        {{
+            "irrigation": "Advice on watering schedule...",
+            "protection": "Advice on pest/disease/weather protection...",
+            "soil": "Advice on soil health...",
+            "fertilizer": "Advice on fertilizer application..."
+        }}
+        
+        Keep advice actionable and specific to Indian agriculture.
+        """
+        
+        response = model.generate_content(prompt)
+        # Clean up code blocks if present
+        text = response.text.replace('```json', '').replace('```', '').strip()
+        
+        import json
+        advisory = json.loads(text)
+        return jsonify(advisory)
+
+    except Exception as e:
+        print(f"Error in advisory: {e}")
+        return jsonify({'error': 'Failed to generate advisory'}), 500
+
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
