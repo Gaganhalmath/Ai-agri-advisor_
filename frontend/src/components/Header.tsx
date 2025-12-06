@@ -11,7 +11,7 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
             <div className="container mx-auto px-4 py-4">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center">
-                        <img src="https://picsum.photos/50?random=10" alt="AI-Agri Logo" className="h-10 w-10 rounded-full mr-3" />
+                        <img src="https://img.freepik.com/premium-vector/letter-leaf-logo_168578-347.jpg?w=2000" alt="AI-Agri Logo" className="h-10 w-10 rounded-full mr-3" />
                         <h1 className="text-2xl font-bold text-primary-800">AI-Agri Advisor</h1>
                     </div>
                     <nav className="hidden md:flex space-x-6">

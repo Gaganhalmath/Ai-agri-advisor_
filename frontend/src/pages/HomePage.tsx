@@ -7,16 +7,37 @@ interface HomePageProps {
 }
 
 const HomePage: React.FC<HomePageProps> = ({ setActiveTab }) => {
+    // Curated list of high-quality agriculture/farming images
+    const bgImages = [
+        "https://images.unsplash.com/photo-1625246333195-0929dfaca00a?q=80&w=1920&auto=format&fit=crop", // Green fields
+        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1920&auto=format&fit=crop", // Sunset field
+        "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=1920&auto=format&fit=crop", // Wheat field
+        "https://images.unsplash.com/photo-1560493676-04071c5f467b?q=80&w=1920&auto=format&fit=crop", // Modern farming
+        "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?q=80&w=1920&auto=format&fit=crop"  // Vineyard/Orchard
+    ];
+
+    const [heroImage, setHeroImage] = React.useState(bgImages[0]);
+
+    React.useEffect(() => {
+        const randomImage = bgImages[Math.floor(Math.random() * bgImages.length)];
+        setHeroImage(randomImage);
+    }, []);
+
     return (
         <div>
             {/* Hero Section */}
-            <section className="hero-bg text-white py-20 px-4">
+            <section
+                className="hero-bg text-white py-20 px-4 transition-all duration-1000 ease-in-out"
+                style={{
+                    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('${heroImage}')`
+                }}
+            >
                 <div className="container mx-auto text-center">
                     <h2 className="text-4xl md:text-5xl font-bold mb-6">Your AI-Powered Farming Assistant</h2>
                     <p className="text-xl mb-8 max-w-3xl mx-auto">Get personalized advice, weather alerts, government scheme information, and crop management tips tailored to your farm's needs.</p>
                     <button
                         onClick={() => setActiveTab('chat')}
-                        className="bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300"
+                        className="bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105"
                     >
                         Get Started Today
                     </button>
