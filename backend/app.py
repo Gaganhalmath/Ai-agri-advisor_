@@ -9,8 +9,16 @@ from dotenv import load_dotenv
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
 CORS(app)
+
+@app.route('/')
+def serve():
+    return app.send_static_file('index.html')
+
+@app.errorhandler(404)
+def not_found(e):
+    return app.send_static_file('index.html')
 
 # Configure Gemini API
 GENAI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -37,7 +45,32 @@ Key traits:
 If you don't know the answer, admit it and suggest consulting a local Krishi Vigyan Kendra (KVK).
 """
 
-model = genai.GenerativeModel('gemini-2.0-flash', system_instruction=SYSTEM_PROMPT)
+def get_gemini_model():
+    try:
+        # Generic logic: List all models and pick the FIRST one that supports content generation.
+        # This avoids hardcoding specific versions like 'gemini-1.5-flash'.
+        available_models = list(genai.list_models())
+        print(f"Available models: {[m.name for m in available_models]}")
+        
+        selected_model_name = None
+        for m in available_models:
+            if 'generateContent' in m.supported_generation_methods:
+                selected_model_name = m.name
+                break
+        
+        if selected_model_name:
+            print(f"Automatically selected generic model: {selected_model_name}")
+            return genai.GenerativeModel(selected_model_name, system_instruction=SYSTEM_PROMPT)
+        else:
+            print("No model found supporting generateContent.")
+            # Absolute fallback if list is empty or weird
+            return genai.GenerativeModel('gemini-pro', system_instruction=SYSTEM_PROMPT)
+            
+    except Exception as e:
+        print(f"Error selecting model: {e}")
+        return genai.GenerativeModel('gemini-pro', system_instruction=SYSTEM_PROMPT)
+
+model = get_gemini_model()
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
