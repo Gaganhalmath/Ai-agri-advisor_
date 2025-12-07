@@ -176,7 +176,7 @@ const WeatherAlerts: React.FC = () => {
 
             // Try to get AI-powered advice
             try {
-                const apiResponse = await fetch('https://ai-agri-advisor.onrender.com/api/farming-advisory', {
+                const apiResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/farming-advisory`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
