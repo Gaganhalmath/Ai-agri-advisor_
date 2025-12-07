@@ -10,7 +10,7 @@ const HomePage: React.FC<HomePageProps> = ({ setActiveTab }) => {
     return (
         <div>
             {/* Hero Section */}
-            <section className="hero-bg text-white py-20 px-4">
+            <section className="hero-bg text-white py-20 px-4" style={{ backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://media.istockphoto.com/id/990892396/photo/indian-farmer-holding-crop-plant-in-his-wheat-field.jpg?b=1&s=170667a&w=0&k=20&c=x4SPCSCN6WOzYXNHaLo8o57t6iTJ6KW0Z9RmVY6s-3c=')" }}>
                 <div className="container mx-auto text-center">
                     <h2 className="text-4xl md:text-5xl font-bold mb-6">Your AI-Powered Farming Assistant</h2>
                     <p className="text-xl mb-8 max-w-3xl mx-auto">Get personalized advice, weather alerts, government scheme information, and crop management tips.</p>
