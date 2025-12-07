@@ -70,6 +70,15 @@ const ChatAssistant: React.FC = () => {
     };
 
     // Text-to-Speech (Output)
+    const cleanText = (text: string) => {
+        return text
+            .replace(/[*#_`~]/g, '') // Remove markdown symbols
+            .replace(/\[.*?\]\(.*?\)/g, '') // Remove links
+            .replace(/<[^>]*>/g, '') // Remove HTML tags
+            .replace(/\s+/g, ' ') // Normalize whitespace
+            .trim();
+    };
+
     const speakText = (text: string) => {
         if ('speechSynthesis' in window) {
             if (isSpeaking) {
@@ -78,7 +87,9 @@ const ChatAssistant: React.FC = () => {
                 return;
             }
 
-            const utterance = new SpeechSynthesisUtterance(text);
+            const cleanedText = cleanText(text);
+            const utterance = new SpeechSynthesisUtterance(cleanedText);
+
             // Attempt to find a matching voice - simple fallback
             // Note: Mobile data voices often auto-match lang code
             const langCode = {
@@ -88,6 +99,14 @@ const ChatAssistant: React.FC = () => {
             }[selectedLanguage] || 'en-US';
 
             utterance.lang = langCode;
+
+            // Try to find a specific voice for the language if available
+            const voices = window.speechSynthesis.getVoices();
+            const voice = voices.find(v => v.lang === langCode || v.lang.startsWith(langCode.split('-')[0]));
+            if (voice) {
+                utterance.voice = voice;
+            }
+
             utterance.onend = () => setIsSpeaking(false);
             utterance.onstart = () => setIsSpeaking(true);
 

@@ -65,19 +65,19 @@ const HomePage: React.FC<HomePageProps> = ({ setActiveTab }) => {
                             name="Rajesh Kumar"
                             location="Punjab"
                             text="The weather alerts have saved my crops multiple times during unexpected rainfall. This AI assistant is like having an expert by my side 24/7."
-                            image="https://picsum.photos/100?random=11"
+                            image="https://images.unsplash.com/photo-1595254364414-88d44728516b?auto=format&fit=crop&w=150&q=80"
                         />
                         <Testimonial
                             name="Priya Singh"
                             location="Maharashtra"
                             text="The government scheme information helped me secure a subsidy for drip irrigation. I'm grateful for this platform."
-                            image="https://picsum.photos/100?random=12"
+                            image="https://images.unsplash.com/photo-1627050302720-3162b700f5c8?auto=format&fit=crop&w=150&q=80"
                         />
                         <Testimonial
                             name="Vikram Patel"
                             location="Gujarat"
                             text="The fertilizer recommendations have improved my yield by 25%. The AI chat gives practical advice that works in real farming conditions."
-                            image="https://picsum.photos/100?random=13"
+                            image="https://images.unsplash.com/photo-1566576912902-1d5445218d6e?auto=format&fit=crop&w=150&q=80"
                         />
                     </div>
                 </div>

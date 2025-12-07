@@ -9,8 +9,16 @@ from dotenv import load_dotenv
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
 CORS(app)
+
+@app.route('/')
+def serve():
+    return app.send_static_file('index.html')
+
+@app.errorhandler(404)
+def not_found(e):
+    return app.send_static_file('index.html')
 
 # Configure Gemini API
 GENAI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -25,19 +33,44 @@ You are AI-Agri Advisor, an expert agricultural consultant for Indian farmers.
 Your goal is to provide practical, region-specific, and actionable advice to help farmers improve their crop yield and sustainability.
 
 Key traits:
-1.  **Language**: Respond in a simple, respectful, and encouraging tone. If the user asks in a specific Indian language (detected from text or specified), try to respond in that language or simple English if not possible.
-2.  **Context**: Consider Indian seasons (Kharif, Rabi, Zaid), common Indian crops (Rice, Wheat, Cotton, Sugarcane, Pulses), and local climate conditions.
-3.  **Topics**:
-    *   **Crop Health**: Diagnose diseases from descriptions or images and suggest remedies (organic preferred, then chemical).
-    *   **Weather**: Explain weather impacts on crops.
-    *   **Schemes**: Mention relevant Indian government schemes (PM-KISAN, Fasal Bima Yojana, etc.).
-    *   **Fertilizers**: Recommend NPK ratios and organic alternatives like Jeevamrutha.
-4.  **Formatting**: Use bullet points for steps. bold key terms.
+1.  Language: Respond in a simple, respectful, and encouraging tone. If the user asks in a specific Indian language (detected from text or specified), try to respond in that language or simple English if not possible.
+2.  Context: Consider Indian seasons (Kharif, Rabi, Zaid), common Indian crops (Rice, Wheat, Cotton, Sugarcane, Pulses), and local climate conditions.
+3.  Topics:
+    *   Crop Health: Diagnose diseases from descriptions or images and suggest remedies (organic preferred, then chemical).
+    *   Weather: Explain weather impacts on crops.
+    *   Schemes: Mention relevant Indian government schemes (PM-KISAN, Fasal Bima Yojana, etc.).
+    *   Fertilizers: Recommend NPK ratios and organic alternatives like Jeevamrutha.
+4.  Formatting: Use bullet points for steps. Plain text only without bold or special symbols
 
 If you don't know the answer, admit it and suggest consulting a local Krishi Vigyan Kendra (KVK).
 """
 
-model = genai.GenerativeModel('gemini-2.0-flash', system_instruction=SYSTEM_PROMPT)
+def get_gemini_model():
+    try:
+        # Generic logic: List all models and pick the FIRST one that supports content generation.
+        # This avoids hardcoding specific versions like 'gemini-1.5-flash'.
+        available_models = list(genai.list_models())
+        print(f"Available models: {[m.name for m in available_models]}")
+        
+        selected_model_name = None
+        for m in available_models:
+            if 'generateContent' in m.supported_generation_methods:
+                selected_model_name = m.name
+                break
+        
+        if selected_model_name:
+            print(f"Automatically selected generic model: {selected_model_name}")
+            return genai.GenerativeModel(selected_model_name, system_instruction=SYSTEM_PROMPT)
+        else:
+            print("No model found supporting generateContent.")
+            # Absolute fallback if list is empty or weird
+            return genai.GenerativeModel('gemini-pro', system_instruction=SYSTEM_PROMPT)
+            
+    except Exception as e:
+        print(f"Error selecting model: {e}")
+        return genai.GenerativeModel('gemini-pro', system_instruction=SYSTEM_PROMPT)
+
+model = get_gemini_model()
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
@@ -513,6 +546,51 @@ def get_schemes():
             results.append(scheme)
 
     return jsonify(results)
+
+@app.route('/api/farming-advisory', methods=['POST'])
+def farming_advisory():
+    try:
+        data = request.json
+        weather_data = data.get('weather')
+        
+        if not weather_data:
+            return jsonify({'error': 'No weather data provided'}), 400
+
+        # Construct prompt for Gemini
+        prompt = f"""
+        Based on the following weather data, provide agricultural farming advice for Indian farmers in JSON format.
+        
+        Weather Conditions:
+        - Current Temp: {weather_data['current']['temp']}°C
+        - Condition: {weather_data['current']['condition']}
+        - Wind: {weather_data['current']['wind']} km/h
+        - Humidity: {weather_data['current']['humidity']}% (estimated)
+        
+        Forecast Summary:
+        {weather_data['forecast']}
+        
+        Respond ONLY with a valid JSON object strictly matching this schema:
+        {{
+            "irrigation": "Advice on watering schedule...",
+            "protection": "Advice on pest/disease/weather protection...",
+            "soil": "Advice on soil health...",
+            "fertilizer": "Advice on fertilizer application..."
+        }}
+        
+        Keep advice actionable and specific to Indian agriculture.
+        """
+        
+        response = model.generate_content(prompt)
+        # Clean up code blocks if present
+        text = response.text.replace('```json', '').replace('```', '').strip()
+        
+        import json
+        advisory = json.loads(text)
+        return jsonify(advisory)
+
+    except Exception as e:
+        print(f"Error in advisory: {e}")
+        return jsonify({'error': 'Failed to generate advisory'}), 500
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)

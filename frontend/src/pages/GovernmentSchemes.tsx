@@ -27,15 +27,19 @@ const GovernmentSchemes: React.FC = () => {
             if (state) queryParams.append("state", state);
             if (crop) queryParams.append("crop", crop);
 
-            const response = await fetch(`http://localhost:5000/api/schemes?${queryParams.toString()}`);
+            const url = `${import.meta.env.VITE_API_URL}/api/schemes?${queryParams.toString()}`;
+            console.log("Fetching schemes from:", url);
+
+            const response = await fetch(url);
             if (!response.ok) {
+                console.error("Fetch failed with status:", response.status, response.statusText);
                 throw new Error("Failed to fetch schemes");
             }
             const data = await response.json();
             setSchemes(data);
         } catch (err) {
+            console.error("Error in fetchSchemes:", err);
             setError("Failed to load schemes. Please try again later.");
-            console.error(err);
         } finally {
             setLoading(false);
         }
